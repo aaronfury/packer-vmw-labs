@@ -5,7 +5,7 @@ packer {
   required_version = ">= 1.8.0"
   required_plugins {
     vmware = {
-      version = " >= 1.0.6"
+      version = " >= 1.0.8"
       source  = "github.com/hashicorp/vmware"
     }
   }
@@ -80,9 +80,14 @@ variable "vm_network" {
   description = "Network"
 }
 
-variable "iso_path" {
+variable "iso_url" {
   type    = string
   description = "Windows ISO location"
+}
+
+variable "iso_checksum" {
+  type    = string
+  description = "Windows ISO file checksum"
 }
 
 variable "winrm_username" {
@@ -95,7 +100,17 @@ variable "winrm_password" {
   description = "winrm password"
 }
 
-source "vmw" "lab_windows_2022_base" {
+variable "kms_host" {
+  type    = string
+  description = "the KMS host:port to configure"
+}
+
+variable "account_params" {
+  type    = string
+  description = "The details of the account to create on the VM, in the format: USERNAME=user,USERFULLNAME='User Full Name',USERISADMIN=<true|false>,USERPASS=Password"
+}
+
+source "vmware-iso" "lab_windows_2022_base" {
 	vm_name = var.vm_name
 	// Hardware specs
 	cpus = var.vm_cpus
@@ -116,9 +131,9 @@ source "vmw" "lab_windows_2022_base" {
 	// Guest OS
 	guest_os_type = var.operating_system_vm
 	version = var.vm_hardwareversion
-	iso_url = var.iso_path
+	iso_url = var.iso_url
 	iso_checksum = var.iso_checksum
-	floppy_files = ["${path.root}/files/floppy/"]
+	floppy_files = ["${path.cwd}/files/floppy/"]
 	floppy_label = "floppy"
 
 	// WinRM 
@@ -132,49 +147,49 @@ source "vmw" "lab_windows_2022_base" {
 }
 
 build {
-  sources = ["source.vmw.lab_windows_2022_base"]
+  sources = ["source.vmware-iso.lab_windows_2022_base"]
 
   provisioner "powershell" {
-    script = "./image-creation/scripts/create-folders.ps1"
+    script = "./scripts/create-folders.ps1"
   }
 
   provisioner "file" {
-	source = "./image-creation/files/temp/"
+	source = "./files/temp/"
 	destination = "C:/Temp/"
   }
 
   provisioner "powershell" {
-    script = "./image-creation/scripts/remove-features-part1.ps1"
+    script = "./scripts/remove-features-part1.ps1"
   }
 
   # Restart here to finish removing Windows Defender, which will speed up the rest of the process. It's also necessary to split up removing Windows "Features" and "Capabilities". Attempting to do both without a reboot causes the removal of *EVERYTHING* to fail.
   provisioner "windows-restart" {}
 
   provisioner "powershell" {
-    script = "./image-creation/scripts/remove-features-part2.ps1"
+    script = "./scripts/remove-features-part2.ps1"
   }
 
   # This will create any accounts needed by the image.
   provisioner "powershell" {
-    script           = "./image-creation/scripts/create-accounts.ps1"
-    environment_vars = split(",", var.default_user_password)
+    script           = "./scripts/create-accounts.ps1"
+    environment_vars = split(",", var.account_params)
   }
 
   # This will set the KMS server for itopia Windows images.
   provisioner "powershell" {
-    script           = "./image-creation/scripts/set-kms-server.ps1"
-    environment_vars = split(",", var.scripts.script_set_kms_server_env_vars)
+    script           = "./scripts/set-kms-server.ps1"
+    environment_vars = split(",", var.kms_host)
     valid_exit_codes = [0, 3221549112]
   }
 
   # Set a bunch of user configuration into the "default" user profile, so that all new user profiles get these values
   provisioner "powershell" {
-    script = "./image-creation/scripts/set-default-user-registry.ps1"
+    script = "./scripts/set-default-user-registry.ps1"
   }
 
   # Enable the built-in Photo Viewer, which is disabled by default
   provisioner "powershell" {
-    script  = "./image-creation/scripts/enable-photo-viewer.ps1"
+    script  = "./scripts/enable-photo-viewer.ps1"
   }
 
   # Run Windows Update. This provisioner automatically restarts the machine when the updates are complete.
@@ -183,12 +198,12 @@ build {
 
   # Install Firefox
   provisioner "powershell" {
-    script = "./image-creation/scripts/install-firefox.ps1"
+    script = "./scripts/install-firefox.ps1"
   }
 
   # This will "optimize" any .NET applications during the build phase so it will not happen during first boot when the user logs on.
   provisioner "powershell" {
-    script = "./image-creation/scripts/optimize-dotNet.ps1"
+    script = "./scripts/optimize-dotNet.ps1"
   }
 
   # TODO: Run the Windows Disk Cleanup Utility

@@ -22,6 +22,6 @@ vm_network              =   "VMnet8"
 vm_hardwareversion 		= 	"20"
 
 // Removable media
-iso_url				= 	"D:/Virtual Machines/OS Images/Windows Server 2022 with Jan 2023 Update.iso"
+iso_url				= 	"D:/Virtual Machines/OS Images/Windows Server 2022 with Jan 2023 Updates.iso"
 // Use Get-FileHash to calculate the checksum
 iso_checksum = "sha256:8E64D0CD0C69BA1DF535A04960E13BBA09E26DAA8BC0F30A570BFF741D494F9C"
