@@ -193,3 +193,4 @@ build {
 
   # TODO: Run the Windows Disk Cleanup Utility
   # Sample script available here: https://www.powershellgallery.com/packages/Invoke-WindowsDiskCleanup/1.0/Content/Invoke-WindowsDiskCleanup.ps1
+}
