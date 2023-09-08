@@ -133,6 +133,7 @@ source "vmware-iso" "lab_windows_2022_base" {
 	version = var.vm_hardwareversion
 	iso_url = var.iso_url
 	iso_checksum = var.iso_checksum
+	tools_upload_flavor = "windows"
 	floppy_files = ["${path.cwd}/files/floppy/"]
 	floppy_label = "floppy"
 

@@ -72,7 +72,40 @@
     </settings>
     <settings pass="oobeSystem">
         <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" language="neutral" name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" versionScope="nonSxS">
-            <OOBE>
+            <AutoLogon>
+                <Password>
+                    <Value>REPLACEME!</Value>
+                    <PlainText>true</PlainText>
+                </Password>
+                <LogonCount>1</LogonCount>
+                <Username>Administrator</Username>
+                <Enabled>true</Enabled>
+            </AutoLogon>
+                    <FirstLogonCommands>
+                <SynchronousCommand wcm:action="add">
+                    <Order>1</Order>
+                    <Description>Set Execution Policy 64 Bit</Description>
+                    <CommandLine>cmd.exe /c powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
+                    <RequiresUserInput>true</RequiresUserInput>
+                </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <Order>2</Order>
+                    <Description>Set Execution Policy 32 Bit</Description>
+                    <CommandLine>C:\Windows\SysWOW64\cmd.exe /c powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"</CommandLine>
+                    <RequiresUserInput>true</RequiresUserInput>
+                </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File a:\set-temp.ps1</CommandLine>
+                    <Order>13</Order>
+                    <Description>Set Temp Folders</Description>
+                </SynchronousCommand>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>cmd.exe /c C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File a:\enable-winrm.ps1</CommandLine>
+                    <Description>Enable WinRM</Description>
+                    <Order>99</Order>
+                </SynchronousCommand> 
+            </FirstLogonCommands>
+			<OOBE>
                 <HideEULAPage>true</HideEULAPage>
                 <HideLocalAccountScreen>true</HideLocalAccountScreen>
                 <HideOEMRegistrationScreen>true</HideOEMRegistrationScreen>
@@ -83,7 +116,7 @@
             </OOBE>
             <UserAccounts>
                 <AdministratorPassword>
-                    <Value>Password123!</Value>
+                    <Value>REPLACEME!</Value>
                     <PlainText>true</PlainText>
                 </AdministratorPassword>
             </UserAccounts>
